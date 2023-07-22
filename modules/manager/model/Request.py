@@ -1,6 +1,8 @@
 import uuid
+from http import HTTPMethod
 
 from marshmallow import Schema, fields, post_load, ValidationError
+from marshmallow_enum import EnumField
 
 
 class Request:
@@ -48,7 +50,8 @@ class Request:
 class RequestSchema(Schema):
     public_id = fields.UUID(dump_only=True)
     uri = fields.Str(required=True)
-    method = fields.Str(required=True)
+    method = EnumField(HTTPMethod, required=True,
+                       error=f"Invalid value for method. Allowed values are {', '.join(HTTPMethod.__members__)}.")
     headers: dict = fields.Dict(required=False, missing={})
     query_params: list[str] = fields.List(fields.Str(), missing=[])
     body_schema: dict = fields.Dict(required=False, missing={})
