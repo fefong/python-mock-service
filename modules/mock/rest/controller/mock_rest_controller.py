@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 
@@ -13,7 +14,7 @@ api = Api(mock_rest_blueprint)
 
 
 @mock_rest_blueprint.route('/<path:uri>', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'])
-def rest_generic_method(uri: str):
+async def rest_generic_method(uri: str):
     try:
         logging.debug({'path': request.path})
         logging.debug({'uri': uri})
@@ -28,13 +29,18 @@ def rest_generic_method(uri: str):
     try:
         endpoint = mock_rest_service.check_endpoint(request.path, request.method)
         if not mock_rest_service.valid_headers(dict(request.headers), endpoint.request):
-            return "Invalid Header", 400
+            return '{"message": "Invalid Header"}', 400
 
         if not mock_rest_service.valid_schema(request.json, endpoint.request):
-            return "Invalid Schema", 400
+            return '{"message": "Invalid Schema"}', 400
 
         if not mock_rest_service.valid_body(request.json, endpoint.request):
-            return "Invalid Body", 400
+            return '{"message": "Invalid Body"}', 400
+
+        if endpoint.response.delay > 0:
+            logging.debug(f"Start delay: {endpoint.response.delay}")
+            await asyncio.sleep(endpoint.response.delay)
+            logging.debug(f"Finished delay")
 
         response = flask.Response(json.dumps(endpoint.response.body),
                                   endpoint.response.status_code,
