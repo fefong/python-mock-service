@@ -31,7 +31,14 @@ def post_endpoint():
         endpoint: Endpoint = EndpointSchema().load(json_data)
         logging.debug(endpoint.__dict__)
         rest_service.insert_one(endpoint)
-        data = {"message": "Endpoint created successfully"}
+        data = {
+            "message": "Endpoint created successfully",
+            "data": {
+                "public_id": endpoint.public_id,
+                "mock": endpoint.request.uri,
+                "method": endpoint.request.method
+            }
+        }
         return data, HTTPStatus.CREATED
     except ValidationError as ex:
         return __handle_validation_error__(ex)
