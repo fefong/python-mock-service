@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-from http import HTTPStatus
+from http import HTTPStatus, HTTPMethod
 
 import flask
 from flask import request, Blueprint
@@ -12,9 +12,11 @@ from modules.mock.rest.service import mock_rest_service
 mock_rest_blueprint = Blueprint('mock_rest', __name__, url_prefix="/rest/mock")
 
 api = Api(mock_rest_blueprint)
+methods = [HTTPMethod.GET, HTTPMethod.POST, HTTPMethod.PUT, HTTPMethod.PATCH,
+           HTTPMethod.DELETE, HTTPMethod.HEAD, HTTPMethod.OPTIONS]
 
 
-@mock_rest_blueprint.route('/<path:uri>', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'])
+@mock_rest_blueprint.route('/<path:uri>', methods=methods)
 async def rest_generic_method(uri: str):
     try:
         logging.debug({'path': request.path})
