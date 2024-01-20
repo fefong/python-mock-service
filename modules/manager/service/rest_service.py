@@ -1,3 +1,5 @@
+import logging
+
 from modules.manager.model.Endpoint import Endpoint
 from modules.manager.repository import rest_repository
 
@@ -30,10 +32,14 @@ def get_endpoint_by_public_id(public_id):
 
 
 def update_endpoint():
+    # TODO: [service] update endpoint
+    logging.debug("not yet developed")
     return None
 
 
 def delete_endpoint():
+    # TODO: [service] delete endpoint
+    logging.debug("not yet developed")
     return None
 
 

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+from http import HTTPStatus
 
 import flask
 from flask import request, Blueprint
@@ -29,13 +30,13 @@ async def rest_generic_method(uri: str):
     try:
         endpoint = mock_rest_service.check_endpoint(request.path, request.method)
         if not mock_rest_service.valid_headers(dict(request.headers), endpoint.request):
-            return '{"message": "Invalid Header"}', 400
+            return '{"message": "Invalid Header"}', HTTPStatus.BAD_REQUEST
 
         if not mock_rest_service.valid_schema(request.json, endpoint.request):
-            return '{"message": "Invalid Schema"}', 400
+            return '{"message": "Invalid Schema"}', HTTPStatus.BAD_REQUEST
 
         if not mock_rest_service.valid_body(request.json, endpoint.request):
-            return '{"message": "Invalid Body"}', 400
+            return '{"message": "Invalid Body"}', HTTPStatus.BAD_REQUEST
 
         if endpoint.response.delay > 0:
             logging.debug(f"Start delay: {endpoint.response.delay}")
@@ -51,4 +52,4 @@ async def rest_generic_method(uri: str):
 
         return response
     except Exception as e:
-        return repr(e), 404
+        return repr(e), HTTPStatus.NOT_FOUND

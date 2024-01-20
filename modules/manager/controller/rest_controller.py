@@ -1,4 +1,5 @@
 import logging
+from http import HTTPStatus
 
 from flask import Blueprint, request
 from marshmallow import ValidationError
@@ -20,7 +21,7 @@ def get_endpoints():
             for endpoint in endpoints],
         "total": len(endpoints)
     }
-    return data
+    return data, HTTPStatus.OK
 
 
 @rest_blueprint.route("/create/", methods=["POST"])
@@ -30,38 +31,44 @@ def post_endpoint():
         endpoint: Endpoint = EndpointSchema().load(json_data)
         logging.debug(endpoint.__dict__)
         rest_service.insert_one(endpoint)
-        data = {"mensagem": "Endpoint criado com sucesso"}
-        return data, 201
+        data = {"message": "Endpoint created successfully"}
+        return data, HTTPStatus.CREATED
     except ValidationError as ex:
         return __handle_validation_error__(ex)
     except Exception as e:
-        return repr(e), 400
+        return repr(e), HTTPStatus.BAD_REQUEST
 
 
 @rest_blueprint.route("/update/<id>/", methods=["PUT"])
 def put_endpoint(id=None):
+    # TODO: [controller] update endpoint (put)
     logging.info("PUT - Update")
-    return rest_service.get_endpoints()
+    logging.debug("not yet developed")
+    return rest_service.get_endpoints(), HTTPStatus.OK
 
 
 @rest_blueprint.route("/update/<id>/", methods=["PATCH"])
 def patch_endpoint(id=None):
+    # TODO: [controller] update endpoint (patch)
     logging.info("PATCH - Update")
-    return rest_service.get_endpoints()
+    logging.debug("not yet developed")
+    return rest_service.get_endpoints(), HTTPStatus.OK
 
 
 @rest_blueprint.route("/delete/<id>/", methods=["DELETE"])
 def delete_endpoint(id=None):
-    return rest_service.get_endpoints()
+    # TODO: [controller] delete endpoint
+    logging.debug("not yet developed")
+    return rest_service.get_endpoints(), HTTPStatus.OK
 
 
 @rest_blueprint.route("/special_tags/", methods=["GET"])
 def get_special_tags():
-    return rest_service.list_special_tags()
+    return rest_service.list_special_tags(), HTTPStatus.OK
 
 
 def __handle_validation_error__(ex: ValidationError):
     errors = []
     for field, message in ex.messages.items():
         errors.append({"field": field, "message": message})
-    return {"message": "validation failure", "errors": errors}, 400
+    return {"message": "validation failure", "errors": errors}, HTTPStatus.BAD_REQUEST
