@@ -4,6 +4,10 @@
 
 The Mock Service is a versatile and efficient tool designed for creating mock endpoints with a wide range of functionalities. It offers a completely generic approach, eliminating the need for code modifications. All the features can be easily managed through a user-friendly API, providing full control over the Mocks.
 
+**Objective:** Study
+
+**Version:** 0.0.1-ALPHA
+
 ## Settings
 
 - [x] Python 3.11.2
@@ -35,23 +39,30 @@ python app.py
 ⚠️ *Unmarked items are under development.* ⚠️ 
 
 - [ ] CRUD Mock endpoint
-  - [x] Create mock endpoint
+  - [x] **Create** mock endpoint
     - [x] *'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'*
-  - [x] Read mock endpoint
-  - [ ] Update mock endpoint
-  - [ ] Delete mock endpoint
+  - [x] **Read** mock endpoint
+  - [ ] **Update** mock endpoint
+    - [ ] Full update mock endpoint *(update)*
+    - [ ] Partial update mock endpoint *(patch)*
+  - [ ] **Delete** mock endpoint
+    - [ ] Soft delete
+    - [ ] Hard delete
+- [ ] CRUD Flow Mock endpoint
 - [x] Header validation
-  - [x] Header key validation
-  - [x] Header value validation
+  - [x] Key validation
+  - [x] Value validation
 - [x] Body validation
-  - [x] Body key validation
-  - [x] Body value validation
+  - [x] Key validation
+  - [x] Value validation
 - [ ] Body schema validation
 - [x] Async in mocks
 - [x] Delay in response
 - [ ] Special tags
 - [ ] Tests
   - [ ] Unitary tests
+  - [ ] Integration tests
+  - [ ] e2e
 
 ### Docs
 
