@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 from http import HTTPMethod
@@ -17,10 +16,7 @@ api = Api(mock_rest_blueprint)
 
 methods = [HTTPMethod.GET, HTTPMethod.POST, HTTPMethod.PUT, HTTPMethod.PATCH,
            HTTPMethod.DELETE, HTTPMethod.HEAD, HTTPMethod.OPTIONS]
-MESSAGE_INVALID_HEADER = "Invalid Header"
-MESSAGE_INVALID_SCHEMA = "Invalid Schema"
-MESSAGE_INVALID_BODY = "Invalid Body"
-MAX_DELAY_VALUE = 3
+
 MIMETYPE_JSON = "application/json"
 
 
@@ -42,21 +38,10 @@ async def rest_generic_method(uri: str):
 
     try:
         endpoint = mock_rest_service.check_endpoint(request.path, request.method)
-
-        if not mock_rest_service.valid_headers(dict(request.headers), endpoint.request):
-            return ResponseBuilder.response_fail(MESSAGE_INVALID_HEADER)
-
-        if not mock_rest_service.valid_schema(request.json, endpoint.request):
-            return ResponseBuilder.response_fail(MESSAGE_INVALID_HEADER)
-
-        if not mock_rest_service.valid_body(request.json, endpoint.request):
-            return ResponseBuilder.response_fail(MESSAGE_INVALID_BODY)
-
-        if endpoint.response.delay > 0:
-            delay = endpoint.response.delay if endpoint.response.delay < MAX_DELAY_VALUE else MAX_DELAY_VALUE
-            logging.debug(f"Start delay: {delay}s")
-            await asyncio.sleep(delay)
-            logging.debug(f"Finished delay")
+        error_validation = mock_rest_service.validate_fields(request, endpoint)
+        if error_validation:
+            return ResponseBuilder.response_fail(error_validation)
+        await mock_rest_service.check_delay(endpoint.response.delay)
 
         response = Response(json.dumps(endpoint.response.body), endpoint.response.status_code, mimetype=MIMETYPE_JSON)
         for header in endpoint.response.headers:
