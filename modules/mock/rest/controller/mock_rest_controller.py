@@ -1,10 +1,9 @@
 import asyncio
 import json
 import logging
-from http import HTTPStatus, HTTPMethod
+from http import HTTPMethod
 
-import flask
-from flask import request, Blueprint
+from flask import request, Blueprint, Response
 from flask_restful import Api
 
 from modules.manager.utils.builders.responses_builder import ResponseBuilder
@@ -21,6 +20,8 @@ methods = [HTTPMethod.GET, HTTPMethod.POST, HTTPMethod.PUT, HTTPMethod.PATCH,
 MESSAGE_INVALID_HEADER = "Invalid Header"
 MESSAGE_INVALID_SCHEMA = "Invalid Schema"
 MESSAGE_INVALID_BODY = "Invalid Body"
+MAX_DELAY_VALUE = 3
+MIMETYPE_JSON = "application/json"
 
 
 @mock_rest_blueprint.route(MockRoutes.MOCK_GENERIC_URI, methods=methods)
@@ -52,13 +53,12 @@ async def rest_generic_method(uri: str):
             return ResponseBuilder.response_fail(MESSAGE_INVALID_BODY)
 
         if endpoint.response.delay > 0:
-            logging.debug(f"Start delay: {endpoint.response.delay}")
-            await asyncio.sleep(endpoint.response.delay)
+            delay = endpoint.response.delay if endpoint.response.delay < MAX_DELAY_VALUE else MAX_DELAY_VALUE
+            logging.debug(f"Start delay: {delay}s")
+            await asyncio.sleep(delay)
             logging.debug(f"Finished delay")
 
-        response = flask.Response(json.dumps(endpoint.response.body),
-                                  endpoint.response.status_code,
-                                  mimetype='application/json')
+        response = Response(json.dumps(endpoint.response.body), endpoint.response.status_code, mimetype=MIMETYPE_JSON)
         for header in endpoint.response.headers:
             response.headers[header] = endpoint.response.headers[header]
         return response
