@@ -2,6 +2,7 @@ from typing import Optional
 
 from modules.manager.model.Endpoint import Endpoint
 
+# TODO: [repository] change to database
 rest_objects: list[Endpoint] = []
 
 
