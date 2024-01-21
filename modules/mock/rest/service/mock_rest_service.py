@@ -34,7 +34,7 @@ def validate_fields(request, endpoint: Endpoint) -> str | None:
     return None
 
 
-async def check_delay(delay):
+async def check_delay(delay) -> None:
     if delay > 0:
         delay = delay if delay < MAX_DELAY_VALUE else MAX_DELAY_VALUE
         logging.debug(f"Start delay: {delay}s")
@@ -42,7 +42,7 @@ async def check_delay(delay):
         logging.debug(f"Finished delay")
 
 
-def valid_headers(header_request: dict, request: Request):
+def valid_headers(header_request: dict, request: Request) -> bool:
     is_valid_headers = False
     if request.validate_header_key:
         for header in request.headers:
@@ -61,7 +61,7 @@ def valid_headers(header_request: dict, request: Request):
     return is_valid_headers
 
 
-def valid_schema(body_request: dict, request: Request):
+def valid_schema(body_request: dict, request: Request) -> bool:
     if request.validate_schema:
         try:
             jsonschema.validate(body_request, request.body_schema)
@@ -72,7 +72,7 @@ def valid_schema(body_request: dict, request: Request):
         return True
 
 
-def valid_body(body_request: dict, request: Request):
+def valid_body(body_request: dict, request: Request) -> bool:
     is_valid_body = False
     if request.validate_body_key:
         for item in request.body:
