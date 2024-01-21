@@ -1,67 +1,72 @@
 import logging
+from http import HTTPStatus, HTTPMethod
 
 from flask import Blueprint, request
 from marshmallow import ValidationError
 
+from modules.manager.config.endpoint_routes import EndpointRoutes as Routes
 from modules.manager.model.Endpoint import Endpoint, EndpointSchema
 from modules.manager.service import rest_service
+from modules.manager.utils.builders.endpoint_response_builder import EndpointResponseBuilder
+from modules.manager.utils.builders.responses_builder import ResponseBuilder
+from modules.manager.utils.handlers.handlers import Handlers
 
-rest_blueprint = Blueprint("rest", __name__, url_prefix="/endpoints/rest")
+rest_blueprint = Blueprint("rest", __name__, url_prefix=Routes.ENDPOINT_REST_BASE)
+
+MESSAGE_ENDPOINT_LIST_FAIL = "Failure to list endpoints"
+MESSAGE_ENDPOINT_CREATE_FAIL = "Failure to create endpoint"
 
 
-@rest_blueprint.route("/", methods=["GET"])
+@rest_blueprint.route(Routes.ENDPOINT_LIST, methods=[HTTPMethod.GET])
 def get_endpoints():
-    endpoints = rest_service.get_endpoints()
-    data = {
-        "endpoints": [
-            {
-                "manager": endpoint.to_dict()
-            }
-            for endpoint in endpoints],
-        "total": len(endpoints)
-    }
-    return data
+    try:
+        endpoints = rest_service.get_endpoints()
+        return EndpointResponseBuilder.list_endpoints_success(endpoints)
+    except Exception as e:
+        logging.debug(e.__dict__)
+        return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_LIST_FAIL)
 
 
-@rest_blueprint.route("/create/", methods=["POST"])
+@rest_blueprint.route(Routes.ENDPOINT_CREATE, methods=[HTTPMethod.POST])
 def post_endpoint():
     try:
         json_data = request.json
         endpoint: Endpoint = EndpointSchema().load(json_data)
         logging.debug(endpoint.__dict__)
         rest_service.insert_one(endpoint)
-        data = {"mensagem": "Endpoint criado com sucesso"}
-        return data, 201
+        return EndpointResponseBuilder.create_endpoint_success(endpoint)
     except ValidationError as ex:
-        return __handle_validation_error__(ex)
+        return Handlers.handler_validation_error(ex)
     except Exception as e:
-        return repr(e), 400
+        logging.debug(e.__dict__)
+        return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_CREATE_FAIL)
 
 
-@rest_blueprint.route("/update/<id>/", methods=["PUT"])
+@rest_blueprint.route(Routes.ENDPOINT_UPDATE_ID, methods=[HTTPMethod.PUT])
 def put_endpoint(id=None):
+    # TODO: [controller] update endpoint (put)
     logging.info("PUT - Update")
-    return rest_service.get_endpoints()
+    logging.debug("not yet developed")
+    return rest_service.get_endpoints(), HTTPStatus.OK
 
 
-@rest_blueprint.route("/update/<id>/", methods=["PATCH"])
+@rest_blueprint.route(Routes.ENDPOINT_UPDATE_ID, methods=[HTTPMethod.PATCH])
 def patch_endpoint(id=None):
+    # TODO: [controller] update endpoint (patch)
     logging.info("PATCH - Update")
-    return rest_service.get_endpoints()
+    logging.debug("not yet developed")
+    return rest_service.get_endpoints(), HTTPStatus.OK
 
 
-@rest_blueprint.route("/delete/<id>/", methods=["DELETE"])
+@rest_blueprint.route(Routes.ENDPOINT_DELETE_ID, methods=[HTTPMethod.DELETE])
 def delete_endpoint(id=None):
-    return rest_service.get_endpoints()
+    # TODO: [controller] delete endpoint
+    logging.debug("not yet developed")
+    return rest_service.get_endpoints(), HTTPStatus.OK
 
 
-@rest_blueprint.route("/special_tags/", methods=["GET"])
+@rest_blueprint.route(Routes.ENDPOINT_SPECIAL_TAGS, methods=[HTTPMethod.GET])
 def get_special_tags():
-    return rest_service.list_special_tags()
+    return rest_service.list_special_tags(), HTTPStatus.OK
 
 
-def __handle_validation_error__(ex: ValidationError):
-    errors = []
-    for field, message in ex.messages.items():
-        errors.append({"field": field, "message": message})
-    return {"message": "validation failure", "errors": errors}, 400

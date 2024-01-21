@@ -5,7 +5,7 @@ from marshmallow import Schema, fields, post_load
 
 
 class Response:
-    def __init__(self, status_code=200, headers=None, cookies=None, body=None, delay: int = 0):
+    def __init__(self, status_code=HTTPStatus.OK, headers=None, cookies=None, body=None, delay: int = 0):
         self.public_id = str(uuid.uuid4())
         self.status_code: int = status_code
         self.headers: dict = headers

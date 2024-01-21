@@ -1,8 +1,18 @@
+import asyncio
+import logging
+
 import jsonschema
 
 from modules.manager.model.Endpoint import Endpoint
 from modules.manager.model.Request import Request
 from modules.manager.repository import rest_repository
+from modules.manager.utils.exceptions.exceptions import NotFoundError
+
+MESSAGE_ENDPOINT_NOT_FOUND = "URI and Method not founded"
+MESSAGE_INVALID_HEADER = "Invalid Header"
+MESSAGE_INVALID_SCHEMA = "Invalid Schema"
+MESSAGE_INVALID_BODY = "Invalid Body"
+MAX_DELAY_VALUE = 3
 
 
 def check_endpoint(uri: str, method: str) -> Endpoint:
@@ -10,7 +20,26 @@ def check_endpoint(uri: str, method: str) -> Endpoint:
     if endpoint:
         return endpoint
     else:
-        raise Exception(f"endpoint [{uri}] and method [{method}] not founded")
+        metadata = {"uri": uri, "method": method}
+        raise NotFoundError(name="endpoint", message=MESSAGE_ENDPOINT_NOT_FOUND, metadata=metadata)
+
+
+def validate_fields(request, endpoint: Endpoint) -> str | None:
+    if not valid_headers(dict(request.headers), endpoint.request):
+        return MESSAGE_INVALID_HEADER
+    if not valid_schema(request.json, endpoint.request):
+        return MESSAGE_INVALID_HEADER
+    if not valid_body(request.json, endpoint.request):
+        return MESSAGE_INVALID_BODY
+    return None
+
+
+async def check_delay(delay):
+    if delay > 0:
+        delay = delay if delay < MAX_DELAY_VALUE else MAX_DELAY_VALUE
+        logging.debug(f"Start delay: {delay}s")
+        await asyncio.sleep(delay)
+        logging.debug(f"Finished delay")
 
 
 def valid_headers(header_request: dict, request: Request):
@@ -37,7 +66,7 @@ def valid_schema(body_request: dict, request: Request):
         try:
             jsonschema.validate(body_request, request.body_schema)
             return True
-        except Exception as e:
+        except Exception:
             return False
     else:
         return True
