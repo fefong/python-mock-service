@@ -3,6 +3,9 @@ import jsonschema
 from modules.manager.model.Endpoint import Endpoint
 from modules.manager.model.Request import Request
 from modules.manager.repository import rest_repository
+from modules.manager.utils.exceptions.exceptions import NotFoundError
+
+MESSAGE_ENDPOINT_NOT_FOUND = "URI and Method not founded"
 
 
 def check_endpoint(uri: str, method: str) -> Endpoint:
@@ -10,7 +13,8 @@ def check_endpoint(uri: str, method: str) -> Endpoint:
     if endpoint:
         return endpoint
     else:
-        raise Exception(f"endpoint [{uri}] and method [{method}] not founded")
+        metadata = {"uri": uri, "method": method}
+        raise NotFoundError(name="endpoint", message=MESSAGE_ENDPOINT_NOT_FOUND, metadata=metadata)
 
 
 def valid_headers(header_request: dict, request: Request):
@@ -37,7 +41,7 @@ def valid_schema(body_request: dict, request: Request):
         try:
             jsonschema.validate(body_request, request.body_schema)
             return True
-        except Exception as e:
+        except Exception:
             return False
     else:
         return True

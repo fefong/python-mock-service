@@ -17,20 +17,20 @@ class ResponseBuilder:
         return data, HTTPStatus.OK
 
     @staticmethod
-    def response_message(message: str, status_code: HTTPStatus = HTTPStatus.OK, metadata: dict = None):
+    def response_message(message: str, status_code=HTTPStatus.OK, errors: dict = None, metadata: dict = None):
         data = {
             "data": {
-                "message": message
+                "message": message,
+                **({"errors": errors} if errors else {}),
+                **({"metadata": metadata} if metadata else {})
             }
         }
-        if metadata:
-            data["data"].update(metadata)
         return data, status_code
 
     @staticmethod
-    def response_fail(message: str = FAILURE_MESSAGE, metadata: dict = None):
-        return ResponseBuilder.response_message(message, HTTPStatus.BAD_REQUEST, metadata)
+    def response_fail(message: str = FAILURE_MESSAGE, errors: list = None, metadata: dict = None):
+        return ResponseBuilder.response_message(message, HTTPStatus.BAD_REQUEST, errors=errors, metadata=metadata)
 
     @staticmethod
-    def response_fail_not_found(message: str = MESSAGE_NOT_FOUND):
-        return ResponseBuilder.response_message(message, HTTPStatus.NOT_FOUND)
+    def response_fail_not_found(message: str = MESSAGE_NOT_FOUND, metadata: dict = None):
+        return ResponseBuilder.response_message(message, HTTPStatus.NOT_FOUND, metadata=metadata)

@@ -18,12 +18,9 @@ class EndpointResponseBuilder:
         metadata = None
         if endpoint:
             metadata = {
-                "metadata":
-                    {
-                        "public_id": endpoint.public_id,
-                        "mock": endpoint.request.uri,
-                        "method": endpoint.request.method
-                    }
+                "public_id": endpoint.public_id,
+                "mock": endpoint.request.uri,
+                "method": endpoint.request.method
             }
         return ResponseBuilder.response_message(EndpointResponseBuilder.ENDPOINT_CREATED_MESSAGE,
-                                                HTTPStatus.CREATED, metadata)
+                                                HTTPStatus.CREATED, metadata=metadata)
