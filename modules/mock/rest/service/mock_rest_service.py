@@ -1,7 +1,8 @@
 import asyncio
 import logging
 
-import jsonschema
+from jsonschema._format import FormatChecker
+from jsonschema.validators import Draft7Validator
 
 from modules.manager.model.Endpoint import Endpoint
 from modules.manager.model.Request import Request
@@ -9,9 +10,6 @@ from modules.manager.repository import rest_repository
 from modules.manager.utils.exceptions.exceptions import NotFoundError
 
 MESSAGE_ENDPOINT_NOT_FOUND = "URI and Method not founded"
-MESSAGE_INVALID_HEADER = "Invalid Header"
-MESSAGE_INVALID_SCHEMA = "Invalid Schema"
-MESSAGE_INVALID_BODY = "Invalid Body"
 MAX_DELAY_VALUE = 3
 
 
@@ -24,16 +22,6 @@ def check_endpoint(uri: str, method: str) -> Endpoint:
         raise NotFoundError(name="endpoint", message=MESSAGE_ENDPOINT_NOT_FOUND, metadata=metadata)
 
 
-def validate_fields(request, endpoint: Endpoint) -> str | None:
-    if not valid_headers(dict(request.headers), endpoint.request):
-        return MESSAGE_INVALID_HEADER
-    if not valid_schema(request.json, endpoint.request):
-        return MESSAGE_INVALID_HEADER
-    if not valid_body(request.json, endpoint.request):
-        return MESSAGE_INVALID_BODY
-    return None
-
-
 async def check_delay(delay) -> None:
     if delay > 0:
         delay = delay if delay < MAX_DELAY_VALUE else MAX_DELAY_VALUE
@@ -42,7 +30,7 @@ async def check_delay(delay) -> None:
         logging.debug(f"Finished delay")
 
 
-def valid_headers(header_request: dict, request: Request) -> bool:
+def validate_headers(request: Request, header_request: dict) -> bool:
     is_valid_headers = False
     if request.validate_header_key:
         for header in request.headers:
@@ -61,18 +49,23 @@ def valid_headers(header_request: dict, request: Request) -> bool:
     return is_valid_headers
 
 
-def valid_schema(body_request: dict, request: Request) -> bool:
-    if request.validate_schema:
-        try:
-            jsonschema.validate(body_request, request.body_schema)
-            return True
-        except Exception:
-            return False
-    else:
-        return True
+def validate_schema(body_schema: dict, input_json: dict) -> list | None:
+    UNKNOWN_ERROR_MESSAGE = "Unknown error in validation"
+    try:
+        validator = Draft7Validator(body_schema, format_checker=FormatChecker())
+        errors = sorted(validator.iter_errors(input_json), key=lambda e: e.path)
+        if errors:
+            return [{
+                "message": error.message,
+                "schema_path": f"#/{'/'.join(error.schema_path)}"
+            } for error in errors]
+        return None
+    except Exception as ex:
+        logging.error(ex)
+        return [UNKNOWN_ERROR_MESSAGE]
 
 
-def valid_body(body_request: dict, request: Request) -> bool:
+def validate_body(request: Request, body_request: dict) -> bool:
     is_valid_body = False
     if request.validate_body_key:
         for item in request.body:
