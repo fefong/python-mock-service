@@ -9,6 +9,7 @@ from modules.manager.utils.builders.responses_builder import ResponseBuilder
 from modules.manager.utils.exceptions.exceptions import NotFoundError
 from modules.mock.config.mock_routes import MockRoutes
 from modules.mock.rest.service import mock_rest_service
+from modules.mock.rest.service.mock_rest_service import validate_headers, validate_body, validate_schema
 
 mock_rest_blueprint = Blueprint('mock_rest', __name__, url_prefix=MockRoutes.MOCK_REST_BASE)
 
@@ -16,7 +17,9 @@ api = Api(mock_rest_blueprint)
 
 methods = [HTTPMethod.GET, HTTPMethod.POST, HTTPMethod.PUT, HTTPMethod.PATCH,
            HTTPMethod.DELETE, HTTPMethod.HEAD, HTTPMethod.OPTIONS]
-
+MESSAGE_INVALID_HEADER = "Invalid Header"
+MESSAGE_INVALID_SCHEMA = "Invalid values for o schema"
+MESSAGE_INVALID_BODY = "Invalid Body"
 MIMETYPE_JSON = "application/json"
 
 
@@ -38,9 +41,16 @@ async def rest_generic_method(uri: str):
 
     try:
         endpoint = mock_rest_service.check_endpoint(request.path, request.method)
-        error_validation = mock_rest_service.validate_fields(request, endpoint)
-        if error_validation:
-            return ResponseBuilder.response_fail(error_validation)
+
+        if not validate_headers(endpoint.request, dict(request.headers)):
+            return ResponseBuilder.response_fail(MESSAGE_INVALID_HEADER)
+
+        if endpoint.request.validate_schema and (errors := validate_schema(endpoint.request.body_schema, request.json)):
+            return ResponseBuilder.response_fail(MESSAGE_INVALID_SCHEMA, errors)
+
+        if not validate_body(endpoint.request, request.json):
+            return ResponseBuilder.response_fail(MESSAGE_INVALID_BODY)
+
         await mock_rest_service.check_delay(endpoint.response.delay)
 
         response = Response(json.dumps(endpoint.response.body), endpoint.response.status_code, mimetype=MIMETYPE_JSON)
