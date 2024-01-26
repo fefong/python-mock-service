@@ -14,6 +14,14 @@ def save(endpoint: Endpoint) -> None:
     rest_objects.append(endpoint)
 
 
+def delete_by_public_id(public_id: str) -> Optional[Endpoint]:
+    for index, endpoint in enumerate(rest_objects):
+        if endpoint.public_id == public_id:
+            del rest_objects[index]
+            return endpoint
+    return None
+
+
 def update(public_id: str, endpoint_updated: Endpoint) -> str:
     try:
         ...
