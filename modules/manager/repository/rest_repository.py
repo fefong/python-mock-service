@@ -15,7 +15,6 @@ def save(endpoint: Endpoint) -> None:
 
 
 def update(public_id: str, endpoint_updated: Endpoint) -> str:
-
     try:
         ...
         return public_id

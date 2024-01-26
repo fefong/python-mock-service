@@ -6,15 +6,14 @@ from modules.manager.utils.builders.responses_builder import ResponseBuilder
 
 class EndpointResponseBuilder:
 
-    ENDPOINT_CREATED_MESSAGE = "Endpoint created successfully"
-
     @staticmethod
     def list_endpoints_success(endpoints):
         endpoints_dict = [endpoint.to_dict() for endpoint in endpoints]
-        return ResponseBuilder.response_list(endpoints_dict)
+        return ResponseBuilder.response_list(items=endpoints_dict)
 
     @staticmethod
     def create_endpoint_success(endpoint: Endpoint = None):
+        MESSAGE_ENDPOINT_CREATED = "Endpoint created successfully"
         metadata = None
         if endpoint:
             metadata = {
@@ -22,5 +21,6 @@ class EndpointResponseBuilder:
                 "mock": endpoint.request.uri,
                 "method": endpoint.request.method
             }
-        return ResponseBuilder.response_message(EndpointResponseBuilder.ENDPOINT_CREATED_MESSAGE,
-                                                HTTPStatus.CREATED, metadata=metadata)
+        return ResponseBuilder.response_message(message=MESSAGE_ENDPOINT_CREATED,
+                                                status_code=HTTPStatus.CREATED,
+                                                metadata=metadata)

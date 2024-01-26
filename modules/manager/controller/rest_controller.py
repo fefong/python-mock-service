@@ -9,6 +9,7 @@ from modules.manager.model.Endpoint import Endpoint, EndpointSchema
 from modules.manager.service import rest_service
 from modules.manager.utils.builders.endpoint_response_builder import EndpointResponseBuilder
 from modules.manager.utils.builders.responses_builder import ResponseBuilder
+from modules.manager.utils.exceptions.exceptions import ConflictError
 from modules.manager.utils.handlers.handlers import Handlers
 
 rest_blueprint = Blueprint("rest", __name__, url_prefix=Routes.ENDPOINT_REST_BASE)
@@ -37,6 +38,9 @@ def post_endpoint():
         return EndpointResponseBuilder.create_endpoint_success(endpoint)
     except ValidationError as ex:
         return Handlers.handler_validation_error(ex)
+    except ConflictError as ex:
+        return ResponseBuilder.response_fail_conflict(message=ex.message,
+                                                      metadata=ex.metadata)
     except Exception as e:
         logging.debug(e.__dict__)
         return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_CREATE_FAIL)

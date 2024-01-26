@@ -2,6 +2,8 @@ import logging
 
 from modules.manager.model.Endpoint import Endpoint
 from modules.manager.repository import rest_repository
+from modules.manager.utils.enums.names_enum import NamesEnum
+from modules.manager.utils.exceptions.exceptions import ConflictError
 
 special_tags = [
     "{$timestamp$}",
@@ -48,5 +50,14 @@ def list_special_tags() -> list[str]:
 
 
 def insert_one(endpoint: Endpoint):
+    endpoint_found = rest_repository.find_endpoint_by_uri_and_method(endpoint.request.uri, endpoint.request.method)
+    if endpoint_found:
+        metadata = {
+            "uri": endpoint_found.request.uri,
+            "method": endpoint_found.request.method,
+            "public_id": endpoint_found.public_id
+        }
+        raise ConflictError(name=NamesEnum.ENDPOINT, metadata=metadata)
     rest_repository.save(endpoint)
     return endpoint
+
