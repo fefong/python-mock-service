@@ -40,23 +40,30 @@ def post_endpoint():
     except ValidationError as ex:
         return Handlers.handler_validation_error(ex)
     except ConflictError as ex:
-        return ResponseBuilder.response_fail_conflict(message=ex.message,
-                                                      metadata=ex.metadata)
+        return ResponseBuilder.response_fail_conflict(message=ex.message, metadata=ex.metadata)
     except Exception as e:
         logging.debug(e.__dict__)
         return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_CREATE_FAIL)
 
 
 @rest_blueprint.route(Routes.ENDPOINT_UPDATE_ID, methods=[HTTPMethod.PUT])
-def put_endpoint(public_id=None):
-    # TODO: [controller] update endpoint (put)
-    logging.info("PUT - Update")
-    logging.debug("not yet developed")
-    return rest_service.get_endpoints(), HTTPStatus.OK
+def put_endpoint(endpoint_id: str):
+    try:
+        json_data = request.json
+        endpoint: Endpoint = EndpointSchema().load(json_data)
+        rest_service.update_endpoint(endpoint_id, endpoint)
+        return EndpointResponseBuilder.update_endpoint_success(endpoint)
+    except ValidationError as ex:
+        return Handlers.handler_validation_error(ex)
+    except NotFoundError as ex:
+        return ResponseBuilder.response_fail_not_found(message=ex.message, metadata=ex.metadata)
+    except Exception as e:
+        logging.debug(e.__dict__)
+        return ResponseBuilder.response_fail()
 
 
 @rest_blueprint.route(Routes.ENDPOINT_UPDATE_ID, methods=[HTTPMethod.PATCH])
-def patch_endpoint(public_id=None):
+def patch_endpoint(endpoint_id=None):
     # TODO: [controller] update endpoint (patch)
     logging.info("PATCH - Update")
     logging.debug("not yet developed")
@@ -64,13 +71,12 @@ def patch_endpoint(public_id=None):
 
 
 @rest_blueprint.route(Routes.ENDPOINT_DELETE_ID, methods=[HTTPMethod.DELETE])
-def delete_endpoint(public_id: str):
+def delete_endpoint(endpoint_id: str):
     try:
-        public_id = rest_service.delete_endpoint(public_id).public_id
-        return ResponseBuilder.response_message(public_id)
+        endpoint_id = rest_service.delete_endpoint(endpoint_id).id
+        return ResponseBuilder.response_message(endpoint_id)
     except NotFoundError as ex:
-        return ResponseBuilder.response_fail_not_found(message=ex.message,
-                                                       metadata=ex.metadata)
+        return ResponseBuilder.response_fail_not_found(message=ex.message, metadata=ex.metadata)
     except Exception as ex:
         logging.error(ex.__dict__)
         return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_DELETE_FAIL)

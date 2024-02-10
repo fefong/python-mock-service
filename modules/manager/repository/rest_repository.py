@@ -14,20 +14,21 @@ def save(endpoint: Endpoint) -> None:
     rest_objects.append(endpoint)
 
 
-def delete_by_public_id(public_id: str) -> Optional[Endpoint]:
+def delete_by_endpoint_id(endpoint_id: str) -> Optional[Endpoint]:
     for index, endpoint in enumerate(rest_objects):
-        if endpoint.public_id == public_id:
+        if endpoint.id == endpoint_id:
             del rest_objects[index]
             return endpoint
     return None
 
 
-def update(public_id: str, endpoint_updated: Endpoint) -> str:
-    try:
-        ...
-        return public_id
-    except Exception as e:
-        raise Exception("Exception update")
+def update(endpoint_id: str, endpoint_updated: Endpoint) -> Optional[Endpoint]:
+    for index, endpoint in enumerate(rest_objects):
+        if endpoint.id == endpoint_id:
+            endpoint_updated.id = endpoint_id
+            rest_objects[index] = endpoint_updated
+            return endpoint_updated
+    return None
 
 
 def find_endpoint_by_uri_and_method(uri: str, method: str) -> Optional[Endpoint]:
@@ -37,8 +38,8 @@ def find_endpoint_by_uri_and_method(uri: str, method: str) -> Optional[Endpoint]
     return None
 
 
-def find_endpoint_by_public_id(public_id: str) -> Optional[Endpoint]:
+def find_endpoint_by_endpoint_id(endpoint_id: str) -> Optional[Endpoint]:
     for endpoint in rest_objects:
-        if public_id == endpoint.public_id:
+        if endpoint_id == endpoint.id:
             return endpoint
     return None

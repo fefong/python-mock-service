@@ -29,21 +29,29 @@ def get_endpoint(uri: str, method: str):
     return rest_repository.find_endpoint_by_uri_and_method(uri, method)
 
 
-def get_endpoint_by_public_id(public_id):
-    return rest_repository.find_endpoint_by_public_id(public_id)
+def get_endpoint_by_endpoint_id(endpoint_id):
+    return rest_repository.find_endpoint_by_endpoint_id(endpoint_id)
 
 
-def update_endpoint():
-    # TODO: [service] update endpoint
-    logging.debug("not yet developed")
-    return None
+def update_endpoint(endpoint_id: str, endpoint: Endpoint) -> str:
+    metadata = {
+        "id": endpoint_id
+    }
+    endpoint_saved: Endpoint = rest_repository.find_endpoint_by_endpoint_id(endpoint_id)
+    if not endpoint_saved:
+        raise NotFoundError(NamesEnum.ENDPOINT, metadata=metadata)
+
+    endpoint_updated: Endpoint = rest_repository.update(endpoint_id, endpoint)
+    if not endpoint_updated:
+        raise NotFoundError(NamesEnum.ENDPOINT, metadata=metadata)
+    return endpoint_id
 
 
-def delete_endpoint(public_id: str) -> Endpoint:
-    endpoint_deleted = rest_repository.delete_by_public_id(public_id)
+def delete_endpoint(endpoint_id: str) -> Endpoint:
+    endpoint_deleted = rest_repository.delete_by_endpoint_id(endpoint_id)
     if not endpoint_deleted:
         metadata = {
-            "public_id": public_id
+            "id": endpoint_id
         }
         raise NotFoundError(NamesEnum.ENDPOINT, metadata=metadata)
     return endpoint_deleted
@@ -59,7 +67,7 @@ def insert_one(endpoint: Endpoint) -> Endpoint:
         metadata = {
             "uri": endpoint_found.request.uri,
             "method": endpoint_found.request.method,
-            "public_id": endpoint_found.public_id
+            "id": endpoint_found.id
         }
         raise ConflictError(name=NamesEnum.ENDPOINT, metadata=metadata)
     rest_repository.save(endpoint)

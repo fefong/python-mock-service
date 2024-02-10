@@ -10,7 +10,7 @@ from modules.manager.model.Response import ResponseSchema, Response
 class Endpoint:
 
     def __init__(self, request: Request, response: Response):
-        self.public_id = str(uuid.uuid4())
+        self.id = str(uuid.uuid4())
         self.request = request
         self.response = response
 
@@ -22,7 +22,7 @@ class Endpoint:
 
 
 class EndpointSchema(Schema):
-    public_id = fields.UUID(dump_only=True)
+    id = fields.UUID(dump_only=True)
     request = fields.Nested(RequestSchema(), required=True)
     response = fields.Nested(ResponseSchema(), required=True)
 
