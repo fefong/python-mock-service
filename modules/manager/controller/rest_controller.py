@@ -29,12 +29,23 @@ def get_endpoints():
         return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_LIST_FAIL)
 
 
+@rest_blueprint.route(Routes.ENDPOINT_LIST_DETAILS, methods=[HTTPMethod.GET])
+def get_endpoint_details(endpoint_id: str):
+    try:
+        endpoint = rest_service.get_endpoint_by_endpoint_id(endpoint_id)
+        return EndpointResponseBuilder.endpoint_details_success(endpoint)
+    except NotFoundError as ex:
+        return ResponseBuilder.response_fail_not_found(message=ex.message, metadata=ex.metadata)
+    except Exception as e:
+        logging.debug(e.__dict__)
+        return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_LIST_FAIL)
+
+
 @rest_blueprint.route(Routes.ENDPOINT_CREATE, methods=[HTTPMethod.POST])
 def post_endpoint():
     try:
         json_data = request.json
         endpoint: Endpoint = EndpointSchema().load(json_data)
-        logging.debug(endpoint.__dict__)
         rest_service.insert_one(endpoint)
         return EndpointResponseBuilder.create_endpoint_success(endpoint)
     except ValidationError as ex:
@@ -73,7 +84,7 @@ def patch_endpoint(endpoint_id=None):
 @rest_blueprint.route(Routes.ENDPOINT_DELETE_ID, methods=[HTTPMethod.DELETE])
 def delete_endpoint(endpoint_id: str):
     try:
-        endpoint_id = rest_service.delete_endpoint(endpoint_id).id
+        endpoint_id = rest_service.delete_endpoint(endpoint_id)
         return ResponseBuilder.response_message(endpoint_id)
     except NotFoundError as ex:
         return ResponseBuilder.response_fail_not_found(message=ex.message, metadata=ex.metadata)

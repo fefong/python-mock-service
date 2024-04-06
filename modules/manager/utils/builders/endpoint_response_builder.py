@@ -7,9 +7,13 @@ from modules.manager.utils.builders.responses_builder import ResponseBuilder
 class EndpointResponseBuilder:
 
     @staticmethod
-    def list_endpoints_success(endpoints):
+    def list_endpoints_success(endpoints: list[Endpoint]):
         endpoints_dict = [endpoint.to_dict() for endpoint in endpoints]
         return ResponseBuilder.response_list(items=endpoints_dict)
+
+    @staticmethod
+    def endpoint_details_success(endpoint: Endpoint):
+        return ResponseBuilder.response_base(endpoint.to_dict(), HTTPStatus.OK)
 
     @staticmethod
     def create_endpoint_success(endpoint: Endpoint = None):

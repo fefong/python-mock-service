@@ -42,12 +42,15 @@ python app.py
   - [x] **Create** mock endpoint
     - [x] *'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'*
   - [x] **Read** mock endpoint
+    - [x] List all endpoints
+      - [ ] DTO
+    - [x] List endpoint details
   - [ ] **Update** mock endpoint
-    - [ ] Full update mock endpoint *(update)*
-    - [ ] Partial update mock endpoint *(patch)*
+    - [x] Full update mock endpoint *(method: update)*
+    - [ ] Partial update mock endpoint *(method: patch)*
   - [ ] **Delete** mock endpoint
     - [ ] Soft delete
-    - [ ] Hard delete
+    - [x] Hard delete
 - [ ] CRUD Flow Mock endpoint
 - [x] Header validation
   - [x] Key validation
@@ -55,28 +58,38 @@ python app.py
 - [x] Body validation
   - [x] Key validation
   - [x] Value validation
-- [ ] Body schema validation
+- [x] Body schema validation
 - [x] Async in mocks
 - [x] Delay in response
 - [ ] Special tags
+  - [x] Endpoint list Special tags
+  - [ ] Basic Functions with Special tags
+
+## Tests
+
 - [ ] Tests
   - [ ] Unitary tests
   - [ ] Integration tests
   - [ ] e2e
 
-### Docs
+
+## Docs
 
 - [x] README
 - [ ] Architecture
 - [ ] Postman collection
 
-### Container
+## Container
 
 - [ ] Docker
 - [ ] Docker Compose
+  - [ ] Python Mock Service (app) 
+  - [ ] Mongodb
 
-### Database
+## Database
 
 - [ ] Database
+  - [x] Local
+  - [x] Repository [wip]
   - [ ] Mongodb
-  - [ ] Repository
+

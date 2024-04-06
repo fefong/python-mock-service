@@ -6,7 +6,7 @@ from jsonschema.validators import Draft7Validator
 
 from modules.manager.model.Endpoint import Endpoint
 from modules.manager.model.Request import Request
-from modules.manager.repository import rest_repository
+from modules.manager.repository import endpoint_repository
 from modules.manager.utils.enums.names_enum import NamesEnum
 from modules.manager.utils.exceptions.exceptions import NotFoundError
 
@@ -15,7 +15,7 @@ DELAY_VALUE_MAX = 3
 
 def check_endpoint(uri: str, method: str) -> Endpoint:
     MESSAGE_ENDPOINT_NOT_FOUND = "URI and Method not founded"
-    endpoint = rest_repository.find_endpoint_by_uri_and_method(uri, method)
+    endpoint = endpoint_repository.find_endpoint_by_uri_and_method(uri, method)
     if not endpoint:
         metadata = {
             "uri": uri,
