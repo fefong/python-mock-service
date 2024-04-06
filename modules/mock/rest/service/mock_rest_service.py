@@ -7,24 +7,29 @@ from jsonschema.validators import Draft7Validator
 from modules.manager.model.Endpoint import Endpoint
 from modules.manager.model.Request import Request
 from modules.manager.repository import rest_repository
+from modules.manager.utils.enums.names_enum import NamesEnum
 from modules.manager.utils.exceptions.exceptions import NotFoundError
 
-MESSAGE_ENDPOINT_NOT_FOUND = "URI and Method not founded"
-MAX_DELAY_VALUE = 3
+DELAY_VALUE_MAX = 3
 
 
 def check_endpoint(uri: str, method: str) -> Endpoint:
+    MESSAGE_ENDPOINT_NOT_FOUND = "URI and Method not founded"
     endpoint = rest_repository.find_endpoint_by_uri_and_method(uri, method)
-    if endpoint:
-        return endpoint
-    else:
-        metadata = {"uri": uri, "method": method}
-        raise NotFoundError(name="endpoint", message=MESSAGE_ENDPOINT_NOT_FOUND, metadata=metadata)
+    if not endpoint:
+        metadata = {
+            "uri": uri,
+            "method": method
+        }
+        raise NotFoundError(name=NamesEnum.ENDPOINT,
+                            message=MESSAGE_ENDPOINT_NOT_FOUND,
+                            metadata=metadata)
+    return endpoint
 
 
 async def check_delay(delay) -> None:
     if delay > 0:
-        delay = delay if delay < MAX_DELAY_VALUE else MAX_DELAY_VALUE
+        delay = delay if delay < DELAY_VALUE_MAX else DELAY_VALUE_MAX
         logging.debug(f"Start delay: {delay}s")
         await asyncio.sleep(delay)
         logging.debug(f"Finished delay")
@@ -50,7 +55,7 @@ def validate_headers(request: Request, header_request: dict) -> bool:
 
 
 def validate_schema(body_schema: dict, input_json: dict) -> list | None:
-    UNKNOWN_ERROR_MESSAGE = "Unknown error in validation"
+    MESSAGE_UNKNOWN_ERROR = "Unknown error in validation"
     try:
         validator = Draft7Validator(body_schema, format_checker=FormatChecker())
         errors = sorted(validator.iter_errors(input_json), key=lambda e: e.path)
@@ -62,7 +67,7 @@ def validate_schema(body_schema: dict, input_json: dict) -> list | None:
         return None
     except Exception as ex:
         logging.error(ex)
-        return [UNKNOWN_ERROR_MESSAGE]
+        return [MESSAGE_UNKNOWN_ERROR]
 
 
 def validate_body(request: Request, body_request: dict) -> bool:

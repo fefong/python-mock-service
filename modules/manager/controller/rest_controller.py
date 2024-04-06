@@ -9,12 +9,14 @@ from modules.manager.model.Endpoint import Endpoint, EndpointSchema
 from modules.manager.service import rest_service
 from modules.manager.utils.builders.endpoint_response_builder import EndpointResponseBuilder
 from modules.manager.utils.builders.responses_builder import ResponseBuilder
+from modules.manager.utils.exceptions.exceptions import ConflictError, NotFoundError
 from modules.manager.utils.handlers.handlers import Handlers
 
 rest_blueprint = Blueprint("rest", __name__, url_prefix=Routes.ENDPOINT_REST_BASE)
 
 MESSAGE_ENDPOINT_LIST_FAIL = "Failure to list endpoints"
 MESSAGE_ENDPOINT_CREATE_FAIL = "Failure to create endpoint"
+MESSAGE_ENDPOINT_DELETE_FAIL = "Failure to delete endpoint"
 
 
 @rest_blueprint.route(Routes.ENDPOINT_LIST, methods=[HTTPMethod.GET])
@@ -37,21 +39,31 @@ def post_endpoint():
         return EndpointResponseBuilder.create_endpoint_success(endpoint)
     except ValidationError as ex:
         return Handlers.handler_validation_error(ex)
+    except ConflictError as ex:
+        return ResponseBuilder.response_fail_conflict(message=ex.message, metadata=ex.metadata)
     except Exception as e:
         logging.debug(e.__dict__)
         return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_CREATE_FAIL)
 
 
 @rest_blueprint.route(Routes.ENDPOINT_UPDATE_ID, methods=[HTTPMethod.PUT])
-def put_endpoint(id=None):
-    # TODO: [controller] update endpoint (put)
-    logging.info("PUT - Update")
-    logging.debug("not yet developed")
-    return rest_service.get_endpoints(), HTTPStatus.OK
+def put_endpoint(endpoint_id: str):
+    try:
+        json_data = request.json
+        endpoint: Endpoint = EndpointSchema().load(json_data)
+        rest_service.update_endpoint(endpoint_id, endpoint)
+        return EndpointResponseBuilder.update_endpoint_success(endpoint)
+    except ValidationError as ex:
+        return Handlers.handler_validation_error(ex)
+    except NotFoundError as ex:
+        return ResponseBuilder.response_fail_not_found(message=ex.message, metadata=ex.metadata)
+    except Exception as e:
+        logging.debug(e.__dict__)
+        return ResponseBuilder.response_fail()
 
 
 @rest_blueprint.route(Routes.ENDPOINT_UPDATE_ID, methods=[HTTPMethod.PATCH])
-def patch_endpoint(id=None):
+def patch_endpoint(endpoint_id=None):
     # TODO: [controller] update endpoint (patch)
     logging.info("PATCH - Update")
     logging.debug("not yet developed")
@@ -59,10 +71,15 @@ def patch_endpoint(id=None):
 
 
 @rest_blueprint.route(Routes.ENDPOINT_DELETE_ID, methods=[HTTPMethod.DELETE])
-def delete_endpoint(id=None):
-    # TODO: [controller] delete endpoint
-    logging.debug("not yet developed")
-    return rest_service.get_endpoints(), HTTPStatus.OK
+def delete_endpoint(endpoint_id: str):
+    try:
+        endpoint_id = rest_service.delete_endpoint(endpoint_id).id
+        return ResponseBuilder.response_message(endpoint_id)
+    except NotFoundError as ex:
+        return ResponseBuilder.response_fail_not_found(message=ex.message, metadata=ex.metadata)
+    except Exception as ex:
+        logging.error(ex.__dict__)
+        return ResponseBuilder.response_fail(MESSAGE_ENDPOINT_DELETE_FAIL)
 
 
 @rest_blueprint.route(Routes.ENDPOINT_SPECIAL_TAGS, methods=[HTTPMethod.GET])

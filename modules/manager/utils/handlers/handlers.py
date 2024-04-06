@@ -8,8 +8,12 @@ class Handlers:
     MESSAGE_VALIDATION_FAIL = "Validation failure"
 
     @staticmethod
-    def handler_validation_error(ex: ValidationError):
+    def handler_validation_error(validation_error: ValidationError):
         errors = []
-        for field, message in ex.messages.items():
-            errors.append({"field": field, "message": message})
-        return ResponseBuilder.response_fail(Handlers.MESSAGE_VALIDATION_FAIL, errors)
+        for field, message in validation_error.messages.items():
+            errors.append({
+                "field": field,
+                "message": message
+            })
+        return ResponseBuilder.response_fail(message=Handlers.MESSAGE_VALIDATION_FAIL,
+                                             errors=errors)

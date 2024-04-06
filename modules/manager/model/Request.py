@@ -11,7 +11,7 @@ class Request:
                  headers=None, validate_header_key=False, validate_header_values=False,
                  body_schema=None, validate_schema=False,
                  body=None, validate_body_key=False, validate_body_values=False):
-        self.public_id = str(uuid.uuid4())
+        self.id = str(uuid.uuid4())
         self.uri: str = uri
         self.method: str = method
         self.query_params: list[str] = query_params
@@ -48,7 +48,7 @@ class Request:
 
 
 class RequestSchema(Schema):
-    public_id = fields.UUID(dump_only=True)
+    id = fields.UUID(dump_only=True)
     uri = fields.Str(required=True)
     method = EnumField(HTTPMethod, required=True,
                        error=f"Invalid value for method. Allowed values are {', '.join(HTTPMethod.__members__)}.")

@@ -4,8 +4,9 @@ from flask import Response as FlaskResponse, json
 
 class ResponseBuilder:
 
-    FAILURE_MESSAGE = "Request processing failure"
+    MESSAGE_FAILURE = "Request processing failure"
     MESSAGE_NOT_FOUND = "Object not founded"
+    MESSAGE_CONFLICT = "Object already registered"
 
     @staticmethod
     def response_base(data: dict, status_code=HTTPStatus.OK) -> FlaskResponse:
@@ -34,9 +35,13 @@ class ResponseBuilder:
         return ResponseBuilder.response_base(data_message, status_code)
 
     @staticmethod
-    def response_fail(message: str = FAILURE_MESSAGE, errors: list = None, metadata: dict = None) -> FlaskResponse:
+    def response_fail(message: str = MESSAGE_FAILURE, errors: list = None, metadata: dict = None) -> FlaskResponse:
         return ResponseBuilder.response_message(message, HTTPStatus.BAD_REQUEST, errors=errors, metadata=metadata)
 
     @staticmethod
     def response_fail_not_found(message: str = MESSAGE_NOT_FOUND, metadata: dict = None) -> FlaskResponse:
         return ResponseBuilder.response_message(message, HTTPStatus.NOT_FOUND, metadata=metadata)
+
+    @staticmethod
+    def response_fail_conflict(message: str = MESSAGE_CONFLICT, metadata: dict = None) -> FlaskResponse:
+        return ResponseBuilder.response_message(message, HTTPStatus.CONFLICT, metadata=metadata)
